@@ -10,6 +10,8 @@ export const getMessagesProcedure = publicProcedure
   .query(({ input }) => {
     const { conversationId } = input;
     
+    console.log('Getting messages for conversation:', conversationId);
+    
     // Mock messages data based on conversation ID
     const mockMessages = {
       "conv-1": [
@@ -64,7 +66,11 @@ export const getMessagesProcedure = publicProcedure
     
     const messages = mockMessages[conversationId as keyof typeof mockMessages] || [];
     
+    console.log('Returning messages:', messages.length);
+    
+    // Always return a valid object with messages array
     return {
-      messages,
+      messages: messages || [],
+      success: true,
     };
   });

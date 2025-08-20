@@ -110,8 +110,15 @@ export const [ChatProvider, useChat] = createContextHook(() => {
 
   // Update messages when conversation changes
   useEffect(() => {
+    console.log('Messages query data:', messagesQuery.data);
     if (messagesQuery.data?.messages) {
       setMessages(messagesQuery.data.messages);
+    } else if (messagesQuery.data && Array.isArray(messagesQuery.data)) {
+      // Handle case where data is directly an array
+      setMessages(messagesQuery.data);
+    } else {
+      // Ensure we always have an array
+      setMessages([]);
     }
   }, [messagesQuery.data]);
 
@@ -183,7 +190,8 @@ export const [ChatProvider, useChat] = createContextHook(() => {
 
       console.log('tRPC response:', result);
 
-      if (result && result.success) {
+      // Check if result exists and has the expected structure
+      if (result && typeof result === 'object' && 'success' in result && result.success && result.message) {
         // Simulate typing effect
         const fullResponse = result.message.content;
         const words = fullResponse.split(' ');
@@ -246,7 +254,9 @@ export const [ChatProvider, useChat] = createContextHook(() => {
           name: (error as any)?.name,
           message: (error as any)?.message,
           cause: (error as any)?.cause,
-          stack: (error as any)?.stack
+          stack: (error as any)?.stack,
+          data: (error as any)?.data,
+          shape: (error as any)?.shape
         });
       } else {
         console.error('Error details:', error);
@@ -262,6 +272,8 @@ export const [ChatProvider, useChat] = createContextHook(() => {
       const friendlyError = new Error(
         errorMessage.includes('Failed to fetch') 
           ? 'Unable to connect to the server. Please check your internet connection and try again.'
+          : errorMessage.includes('Cannot read properties of undefined')
+          ? 'Server response was invalid. Please try again.'
           : `Failed to send message: ${errorMessage}`
       );
       

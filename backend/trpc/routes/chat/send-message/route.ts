@@ -18,6 +18,8 @@ export const sendMessageProcedure = publicProcedure
   .mutation(async ({ input }) => {
     const { message, conversationId } = input;
     
+    console.log('Sending message:', { message, conversationId });
+    
     try {
       // Call the AI API for real streaming response
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
@@ -40,10 +42,12 @@ export const sendMessageProcedure = publicProcedure
       });
 
       if (!response.ok) {
-        throw new Error(`AI API error: ${response.status}`);
+        console.error('AI API response not ok:', response.status, response.statusText);
+        throw new Error(`AI API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('AI API response data:', data);
       
       const assistantMessage = {
         role: "assistant" as const,
@@ -51,11 +55,14 @@ export const sendMessageProcedure = publicProcedure
         timestamp: Date.now(),
       };
       
-      return {
+      const result = {
         success: true,
         message: assistantMessage,
         conversationId,
       };
+      
+      console.log('Returning result:', result);
+      return result;
     } catch (error) {
       console.error('AI API error:', error);
       
@@ -66,11 +73,15 @@ export const sendMessageProcedure = publicProcedure
         timestamp: Date.now(),
       };
       
-      return {
+      const fallbackResult = {
         success: true,
         message: assistantMessage,
         conversationId,
+        fallback: true,
       };
+      
+      console.log('Returning fallback result:', fallbackResult);
+      return fallbackResult;
     }
   });
 
