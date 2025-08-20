@@ -48,9 +48,23 @@ export const getMessagesProcedure = publicProcedure
           timestamp: Date.now() - 86390000,
         },
       ],
+      "conv-1755718463913": [
+        {
+          role: "user" as const,
+          content: "Hello, I'm testing the chat functionality.",
+          timestamp: Date.now() - 1800000,
+        },
+        {
+          role: "assistant" as const,
+          content: "Hello! Welcome to LIMNUS. I'm here to help you explore the depths of consciousness and engage in meaningful conversations. How can I assist you today?",
+          timestamp: Date.now() - 1790000,
+        },
+      ],
     };
     
+    const messages = mockMessages[conversationId as keyof typeof mockMessages] || [];
+    
     return {
-      messages: mockMessages[conversationId as keyof typeof mockMessages] || [],
+      messages,
     };
   });

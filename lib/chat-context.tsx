@@ -183,7 +183,7 @@ export const [ChatProvider, useChat] = createContextHook(() => {
 
       console.log('tRPC response:', result);
 
-      if (result.success) {
+      if (result && result.success) {
         // Simulate typing effect
         const fullResponse = result.message.content;
         const words = fullResponse.split(' ');
@@ -239,12 +239,18 @@ export const [ChatProvider, useChat] = createContextHook(() => {
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      console.error('Error details:', {
-        name: (error as any)?.name,
-        message: (error as any)?.message,
-        cause: (error as any)?.cause,
-        stack: (error as any)?.stack
-      });
+      
+      // Log detailed error information
+      if (error && typeof error === 'object') {
+        console.error('Error details:', {
+          name: (error as any)?.name,
+          message: (error as any)?.message,
+          cause: (error as any)?.cause,
+          stack: (error as any)?.stack
+        });
+      } else {
+        console.error('Error details:', error);
+      }
       
       // Remove the user message on error
       setMessages(prev => prev.slice(0, -1));

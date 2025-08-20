@@ -293,7 +293,7 @@ export default function ChatScreen() {
     }
   }, [messages, streamingMessage]);
 
-  // Offline message storage
+  // Offline message storage (simplified)
   const saveOfflineMessage = useCallback(async (message: Message) => {
     try {
       const stored = await AsyncStorage.getItem('offlineMessages');
@@ -305,29 +305,6 @@ export default function ChatScreen() {
       console.error('Failed to save offline message:', error);
     }
   }, []);
-  
-  const processOfflineQueue = useCallback(async () => {
-    if (!isConnected || offlineQueue.length === 0) return;
-    
-    try {
-      for (const message of offlineQueue) {
-        await sendMessage(message.content);
-      }
-      
-      // Clear offline queue
-      await AsyncStorage.removeItem('offlineMessages');
-      setOfflineQueue([]);
-    } catch (error) {
-      console.error('Failed to process offline queue:', error);
-    }
-  }, [isConnected, offlineQueue, sendMessage]);
-  
-  // Process offline messages when connection is restored
-  useEffect(() => {
-    if (isConnected) {
-      processOfflineQueue();
-    }
-  }, [isConnected, processOfflineQueue]);
   
   // Load offline messages on mount
   useEffect(() => {
@@ -366,7 +343,7 @@ export default function ChatScreen() {
       if (!isConnected) {
         // Save message for later when offline
         await saveOfflineMessage(userMessage);
-        Alert.alert('Offline', 'Message saved. It will be sent when connection is restored.');
+        Alert.alert('Offline', 'You are currently offline. Please check your connection and try again.');
         return;
       }
       
@@ -384,10 +361,9 @@ export default function ChatScreen() {
     } catch (error) {
       console.error('Failed to send message:', error);
       
-      // Save message offline if send fails
-      await saveOfflineMessage(userMessage);
+      // Don't save to offline queue on error to avoid confusion
       
-      Alert.alert('Error', 'Failed to send message. It has been saved and will be sent when connection is restored.');
+      Alert.alert('Error', 'Failed to send message. Please check your connection and try again.');
       
       // Error haptic feedback
       if (Platform.OS !== 'web') {
@@ -871,7 +847,8 @@ export default function ChatScreen() {
                     <Sparkles size={16} color="white" />
                   </View>
                   <Text style={[styles.messageText, styles.assistantMessageText]}>
-                    {streamingMessage.trim()}<Text style={styles.cursor}>|</Text>
+                    {streamingMessage.trim()}
+                    <Text style={styles.cursor}>|</Text>
                   </Text>
                 </View>
               </View>
